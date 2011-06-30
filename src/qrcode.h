@@ -47,6 +47,11 @@ typedef enum qr_mode{
   Currently this is only modes with exactly one bit set.*/
 #define QR_MODE_HAS_DATA(_mode) (!((_mode)&(_mode)-1))
 
+typedef enum qr_barcode_format{
+    QR_BARCODE_FORMAT_GS1 = 1,
+    QR_BARCODE_FORMAT_AIM = 2,
+} qr_barcode_format;
+
 /*ECI may be used to signal a character encoding for the data.*/
 typedef enum qr_eci_encoding{
   /*GLI0 is like CP437, but the encoding is reset at the beginning of each
@@ -91,7 +96,9 @@ typedef enum qr_eci_encoding{
   QR_ECI_ISO8859_16,
   /*ECI 000019 is reserved?*/
   /*Shift-JIS.*/
-  QR_ECI_SJIS=20
+  QR_ECI_SJIS=20,
+  /*UTF-8.*/
+  QR_ECI_UTF8=26
 }qr_eci_encoding;
 
 
@@ -107,6 +114,8 @@ struct qr_code_data_entry{
     }data;
     /*Decoded "Extended Channel Interpretation" data.*/
     unsigned eci;
+    /*Decoded "Application Indicator" for FNC1 in 2nd position.*/
+    int      ai;
     /*Structured-append header data.*/
     struct{
       unsigned char sa_index;
