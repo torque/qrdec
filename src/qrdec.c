@@ -4101,19 +4101,3 @@ int qr_reader_locate(qr_reader *_reader,qr_code_data_list *_qrlist,
   free(edge_pts);
   return _qrlist->nqrdata-nqrdata;
 }
-
-int qr_reader_extract_text(qr_reader *_reader,const unsigned char *_img,
- int _width,int _height,char ***_text,int _allow_partial_sa){
-  qr_code_data_list qrlist;
-  int               ntext;
-  qr_code_data_list_init(&qrlist);
-  if(qr_reader_locate(_reader,&qrlist,_img,_width,_height)>0){
-    ntext=qr_code_data_list_extract_text(&qrlist,_text,_allow_partial_sa);
-    qr_code_data_list_clear(&qrlist);
-  }
-  else{
-    *_text=NULL;
-    ntext=0;
-  }
-  return ntext;
-}

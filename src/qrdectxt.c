@@ -36,6 +36,32 @@ static void enc_list_mtf(iconv_t _enc_list[3],iconv_t _enc){
   }
 }
 
+int qr_reader_extract_text(
+    qr_reader *_reader,
+    const unsigned char *_img,
+    int _width,
+    int _height,
+    char ***_text,
+    int _allow_partial_sa
+) {
+    qr_code_data_list qrlist = {0};
+    int ntext = 0;
+
+    qr_code_data_list_init(&qrlist);
+
+    if (qr_reader_locate(_reader, &qrlist, _img, _width, _height) > 0) {
+        ntext = qr_code_data_list_extract_text(
+            &qrlist, _text, _allow_partial_sa
+        );
+        qr_code_data_list_clear(&qrlist);
+    } else {
+        *_text = NULL;
+    }
+
+    return ntext;
+}
+
+
 int qr_code_data_list_extract_text(const qr_code_data_list *_qrlist,
  char ***_text,int _allow_partial_sa){
   iconv_t              sjis_cd;
