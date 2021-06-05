@@ -154,6 +154,10 @@ struct qr_code_data{
     Points appear in the order up-left, up-right, down-left, down-right,
      relative to the orientation of the QR code.*/
   qr_point            bbox[4];
+  /* Geometric center of the code, as computed by the intersection of the lines
+   * crossing the diagonals of the bounding box (thus accounting for
+   * perspective/rotation) */
+  qr_point            center;
 };
 
 

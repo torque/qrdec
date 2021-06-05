@@ -4036,6 +4036,34 @@ void qr_reader_match_centers(qr_reader *_reader,qr_code_data_list *_qrlist,
           int l;
           /*Add the data to the list.*/
           qr_code_data_list_add(_qrlist,&qrdata);
+
+          /* compute the geometric center of the code from the bounding box*/
+
+          int divisor =
+              (qrdata.bbox[0][0] - qrdata.bbox[3][0]) * (qrdata.bbox[1][1] - qrdata.bbox[2][1])
+            - (qrdata.bbox[0][1] - qrdata.bbox[3][1]) * (qrdata.bbox[1][0] - qrdata.bbox[2][0]);
+
+          if (divisor == 0) {
+            _qrlist->qrdata[_qrlist->nqrdata-1].center[0] = -1;
+            _qrlist->qrdata[_qrlist->nqrdata-1].center[1] = -1;
+          } else {
+            int lcoeff = qrdata.bbox[0][0] * qrdata.bbox[3][1] - qrdata.bbox[0][1] * qrdata.bbox[3][0];
+            int rcoeff = qrdata.bbox[1][0] * qrdata.bbox[2][1] - qrdata.bbox[1][1] * qrdata.bbox[2][0];
+
+            // TODO: use QR_DIVROUND? requires divisor to be positive.
+            int cx = (
+                (qrdata.bbox[1][0] - qrdata.bbox[2][0]) * lcoeff
+              - (qrdata.bbox[0][0] - qrdata.bbox[3][0]) * rcoeff
+            ) / divisor;
+            int cy = (
+                (qrdata.bbox[1][1] - qrdata.bbox[2][1]) * lcoeff
+              - (qrdata.bbox[0][1] - qrdata.bbox[3][1]) * rcoeff
+            ) / divisor;
+
+            _qrlist->qrdata[_qrlist->nqrdata-1].center[0] = cx >> QR_FINDER_SUBPREC;
+            _qrlist->qrdata[_qrlist->nqrdata-1].center[1] = cy >> QR_FINDER_SUBPREC;
+          }
+
           /*Convert the bounding box we're returning to the user to normal
              image coordinates.*/
           for(l=0;l<4;l++){

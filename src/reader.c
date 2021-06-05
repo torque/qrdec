@@ -97,6 +97,7 @@ int main(int _argc, char **_argv) {
                 qr_code->bbox[3][0], qr_code->bbox[3][1],
                 qr_code->bbox[2][0], qr_code->bbox[2][1]
             );
+            printf("  Center: (%d, %d)\n", qr_code->center[0], qr_code->center[1]);
 
             for (int jdx = 0; jdx < (qr_code->nentries); jdx++) {
                 struct qr_code_data_entry *const entry = qr_code->entries + jdx;
