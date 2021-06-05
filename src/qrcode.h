@@ -136,6 +136,8 @@ struct qr_code_data{
   unsigned char       version;
   /*The ECC level (0...3, corresponding to 'L', 'M', 'Q', and 'H').*/
   unsigned char       ecc_level;
+  /*The mask pattern used to mask the bits of the QR code*/
+  unsigned char       mask;
   /*Structured-append information.*/
   /*The index of this code in the structured-append group.
     If sa_size is zero, this is undefined.*/

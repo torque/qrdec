@@ -3756,6 +3756,7 @@ static int qr_code_decode(qr_code_data *_qrdata,const rs_gf256 *_gf,
     if(ret<0)qr_code_data_clear(_qrdata);
     _qrdata->version=_version;
     _qrdata->ecc_level=ecc_level;
+    _qrdata->mask = _fmt_info & 7;
   }
   free(block_data);
   return ret;

@@ -89,6 +89,7 @@ int main(int _argc, char **_argv) {
             printf("QR Code %d:\n", qridx);
             printf("  Version: %d\n", qr_code->version);
             printf("  ECC level: %c\n", "LMQH"[qr_code->ecc_level]);
+            printf("  Mask: %d\n", qr_code->mask);
             printf(
                 "  Bounds: (%d, %d) (%d, %d) (%d, %d) (%d, %d)\n",
                 qr_code->bbox[0][0], qr_code->bbox[0][1],
