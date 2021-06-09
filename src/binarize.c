@@ -519,122 +519,86 @@ void qr_binarize(unsigned char *_img,int _width,int _height){
 
 /*A simplified adaptive thresholder.
   This compares the current pixel value to the mean value of a (large) window
-   surrounding it.*/
-void qr_binarize(unsigned char *_img,int _width,int _height){
-  if(_width>0&&_height>0){
-    unsigned char *mask;
-    unsigned      *col_sums;
-    int            logwindw;
-    int            logwindh;
-    int            windw;
-    int            windh;
-    int            y0offs;
-    int            y1offs;
-    unsigned       g;
-    int            x;
-    int            y;
-    mask=(unsigned char *)malloc(_width*_height*sizeof(*mask));
+   surrounding it.
+
+  If the argument invert is QR_BINARIZE_INVERT, then the resulting image will be
+   inverted (i.e. previously dark pixels will be binarized to white and
+   previously light pixels will be binarized to black). Otherwise, if
+   QR_BINARIZE_NO_INVERT is provided, then the image will not be inverted. Note
+   that the qrdec algorithm currently expects images to be INVERTED, and
+   non-inverted images will not decode.
+*/
+void qr_binarize(unsigned char *_img, int _width, int _height, qr_binarize_invert_flag invert) {
+  if (_width > 0 && _height > 0) {
+    unsigned char *mask = malloc(_width * _height * sizeof(*mask));
+    unsigned int *col_sums = malloc(_width * sizeof(*col_sums));
+
     /*We keep the window size fairly large to ensure it doesn't fit completely
        inside the center of a finder pattern of a version 1 QR code at full
        resolution.*/
-    for(logwindw=4;logwindw<8&&(1<<logwindw)<(_width+7>>3);logwindw++);
-    for(logwindh=4;logwindh<8&&(1<<logwindh)<(_height+7>>3);logwindh++);
-    windw=1<<logwindw;
-    windh=1<<logwindh;
-    col_sums=(unsigned *)malloc(_width*sizeof(*col_sums));
+    int logwindw = 0;
+    int logwindh = 0;
+    for (logwindw = 4; logwindw < 8 && (1 << logwindw) < ((_width + 7) >> 3); logwindw++);
+    for (logwindh = 4; logwindh < 8 && (1 << logwindh) < ((_height + 7) >> 3); logwindh++);
+
+    int windw = 1 << logwindw;
+    int windh = 1 << logwindh;
+
+    unsigned char invert_mask = -(invert == QR_BINARIZE_NO_INVERT) & 0xFF;
+
     /*Initialize sums down each column.*/
-    for(x=0;x<_width;x++){
-      g=_img[x];
-      col_sums[x]=(g<<logwindh-1)+g;
+    unsigned int g = 0;
+    for (int x = 0; x < _width; x++) {
+      g = _img[x];
+      col_sums[x] = (g << (logwindh - 1)) + g;
     }
-    for(y=1;y<(windh>>1);y++){
-      y1offs=QR_MINI(y,_height-1)*_width;
-      for(x=0;x<_width;x++){
-        g=_img[y1offs+x];
-        col_sums[x]+=g;
+
+    for (int y = 1; y < (windh >> 1); y++) {
+      int y1offs = QR_MINI(y, _height - 1) * _width;
+
+      for (int x = 0; x < _width; x++) {
+        g = _img[y1offs + x];
+        col_sums[x] += g;
       }
     }
-    for(y=0;y<_height;y++){
-      unsigned m;
-      int      x0;
-      int      x1;
+
+    for (int y = 0; y < _height; y++) {
+      unsigned int m = (col_sums[0] << (logwindw - 1)) + col_sums[0];
+
       /*Initialize the sum over the window.*/
-      m=(col_sums[0]<<logwindw-1)+col_sums[0];
-      for(x=1;x<(windw>>1);x++){
-        x1=QR_MINI(x,_width-1);
-        m+=col_sums[x1];
+      for (int x = 1; x < (windw >> 1); x++) {
+        int x1 = QR_MINI(x, _width - 1);
+        m += col_sums[x1];
       }
-      for(x=0;x<_width;x++){
+
+      for (int x = 0; x < _width; x++) {
         /*Perform the test against the threshold T = (m/n)-D,
            where n=windw*windh and D=3.*/
-        g=_img[y*_width+x];
-        mask[y*_width+x]=-(g+3<<logwindw+logwindh<m)&0xFF;
+        g = _img[y * _width + x];
+        mask[y * _width + x] = (-(((g + 3) << (logwindw + logwindh)) < m) & 0xFF) ^ invert_mask;
         /*Update the window sum.*/
-        if(x+1<_width){
-          x0=QR_MAXI(0,x-(windw>>1));
-          x1=QR_MINI(x+(windw>>1),_width-1);
-          m+=col_sums[x1]-col_sums[x0];
+        if (x + 1 < _width) {
+          int x0 = QR_MAXI(0, x - (windw >> 1));
+          int x1 = QR_MINI(x + (windw >> 1), _width - 1);
+          m += col_sums[x1] - col_sums[x0];
         }
       }
+
       /*Update the column sums.*/
-      if(y+1<_height){
-        y0offs=QR_MAXI(0,y-(windh>>1))*_width;
-        y1offs=QR_MINI(y+(windh>>1),_height-1)*_width;
-        for(x=0;x<_width;x++){
-          col_sums[x]-=_img[y0offs+x];
-          col_sums[x]+=_img[y1offs+x];
+      if (y + 1 < _height) {
+        int y0offs = QR_MAXI(0, y - (windh >> 1)) * _width;
+        int y1offs = QR_MINI(y + (windh >> 1), _height - 1) * _width;
+
+        for (int x = 0; x < _width; x++) {
+          col_sums[x] -= _img[y0offs + x];
+          col_sums[x] += _img[y1offs + x];
         }
       }
     }
+
     free(col_sums);
-    memcpy(_img,mask,_width*_height*sizeof(*_img));
+    memcpy(_img, mask, _width * _height * sizeof(*_img));
     free(mask);
   }
-#if defined(QR_DEBUG)
-  {
-    FILE *fout;
-    fout=fopen("binary.png","wb");
-    image_write_png(_img,_width,_height,fout);
-    fclose(fout);
-  }
-#endif
-}
-#endif
-
-#if defined(TEST_BINARIZE)
-#include <stdio.h>
-#include "image.c"
-
-int main(int _argc,char **_argv){
-  unsigned char *img;
-  int            width;
-  int            height;
-  int            x;
-  int            y;
-  if(_argc<2){
-    fprintf(stderr,"usage: %s <image>.png\n",_argv[0]);
-    return EXIT_FAILURE;
-  }
-  /*width=1182;
-  height=1181;
-  img=(unsigned char *)malloc(width*height*sizeof(*img));
-  for(y=0;y<height;y++)for(x=0;x<width;x++){
-    img[y*width+x]=(unsigned char)(-((x&1)^(y&1))&0xFF);
-  }*/
-  {
-    FILE *fin;
-    fin=fopen(_argv[1],"rb");
-    image_read_png(&img,&width,&height,fin);
-    fclose(fin);
-  }
-  qr_binarize(img,width,height);
-  /*{
-    FILE *fout;
-    fout=fopen("binary.png","wb");
-    image_write_png(img,width,height,fout);
-    fclose(fout);
-  }*/
-  free(img);
-  return EXIT_SUCCESS;
 }
 #endif

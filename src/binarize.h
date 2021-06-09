@@ -6,12 +6,12 @@
 #if !defined(_qrcode_binarize_H)
 # define _qrcode_binarize_H (1)
 
-void qr_image_cross_masking_median_filter(unsigned char *_img,
- int _width,int _height);
-
-void qr_wiener_filter(unsigned char *_img,int _width,int _height);
+typedef enum qr_binarize_invert_flag {
+  QR_BINARIZE_NO_INVERT,
+  QR_BINARIZE_INVERT,
+} qr_binarize_invert_flag;
 
 /*Binarizes a grayscale image.*/
-void qr_binarize(unsigned char *_img,int _width,int _height);
+void qr_binarize(unsigned char *_img, int _width, int _height, qr_binarize_invert_flag invert);
 
 #endif

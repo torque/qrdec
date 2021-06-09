@@ -63,7 +63,7 @@ int main(int _argc, char **_argv) {
         fclose(fin);
     }
 
-    qr_binarize(img, width, height);
+    qr_binarize(img, width, height, QR_BINARIZE_INVERT);
 
     {
         FILE *fout = fopen("binary.png", "wb");
