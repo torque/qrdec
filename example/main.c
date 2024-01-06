@@ -94,8 +94,8 @@ int main(int _argc, char **_argv) {
                 "  Bounds: (%d, %d) (%d, %d) (%d, %d) (%d, %d)\n",
                 qr_code->bbox[0][0], qr_code->bbox[0][1],
                 qr_code->bbox[1][0], qr_code->bbox[1][1],
-                qr_code->bbox[3][0], qr_code->bbox[3][1],
-                qr_code->bbox[2][0], qr_code->bbox[2][1]
+                qr_code->bbox[2][0], qr_code->bbox[2][1],
+                qr_code->bbox[3][0], qr_code->bbox[3][1]
             );
             printf("  Center: (%d, %d)\n", qr_code->center[0], qr_code->center[1]);
 

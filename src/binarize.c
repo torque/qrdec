@@ -7,7 +7,6 @@
 #include <math.h>
 #include <string.h>
 #include "util.h"
-#include "image.h"
 #include "binarize.h"
 
 #if 0

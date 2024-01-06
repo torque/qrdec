@@ -10,6 +10,7 @@
 #include "png.h"
 
 static void png_read(png_structp _png,png_bytep _data,png_size_t _sz){
+  printf("read: %d\n", _sz);
   size_t ret;
   ret=fread(_data,_sz,1,(FILE *)png_get_io_ptr(_png));
   if(ret!=1)png_error(_png,"Read Error");
